@@ -1,11 +1,8 @@
-﻿using ExtendedXmlSerializer.Core.Sources;
-
-namespace Performance.Serialization {
-	sealed class Instance : FixedInstanceSource<ProjectItemElement>
+﻿namespace Performance.Serialization
+{
+	sealed class Instance
 	{
-		public static Instance Default { get; } = new Instance();
-
-		Instance() : base(new ProjectItemElement
+		public static ProjectItemElement Default { get; } = new ProjectItemElement
 		{
 			Condition      = "My favorite. ;)",
 			Exclude        = "Not to be confused with include.",
@@ -16,6 +13,7 @@ namespace Performance.Serialization {
 			Label          = "Some label",
 			Update         = "Really?",
 			Remove         = "Something to remove?  Or a boolean, can't tell."
-		}) {}
+
+		};
 	}
 }

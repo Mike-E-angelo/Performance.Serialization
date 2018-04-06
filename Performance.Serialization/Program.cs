@@ -5,7 +5,7 @@ namespace Performance.Serialization
 {
 	class Program
 	{
-		static void Main(string[] args)
+		static void Main()
 		{
 			BenchmarkRunner.Run<XmlDocumentTest>();
 			Console.ReadLine();

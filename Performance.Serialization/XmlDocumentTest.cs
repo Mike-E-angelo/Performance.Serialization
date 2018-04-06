@@ -1,24 +1,35 @@
-﻿using System.IO;
+﻿using BenchmarkDotNet.Attributes;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
-using BenchmarkDotNet.Attributes;
-using ExtendedXmlSerializer.ExtensionModel.Xml;
 
-namespace Performance.Serialization {
+namespace Performance.Serialization
+{
 	public class XmlDocumentTest
 	{
 		readonly XmlSerializer      _classic;
-		readonly IXmlReaderFactory  _readerFactory = new XmlReaderFactory();
-		readonly ProjectItemElement _obj           = Instance.Default.Get();
+		readonly XmlReaderSettings _settings;
+		readonly XmlParserContext _context;
+		readonly ProjectItemElement _obj = Instance.Default;
 		readonly byte[]             _xml;
 
-		public XmlDocumentTest() : this(new XmlSerializer(typeof(ProjectItemElement))) {}
+		public XmlDocumentTest() : this(new XmlSerializer(typeof(ProjectItemElement)), new XmlReaderSettings
+		{
+			IgnoreWhitespace             = true,
+			IgnoreComments               = true,
+			IgnoreProcessingInstructions = true
+		}, new NameTable()) {}
 
-		public XmlDocumentTest(XmlSerializer classic)
+		public XmlDocumentTest(XmlSerializer classic, XmlReaderSettings settings, XmlNameTable table)
+			: this(classic, settings, new XmlParserContext(table, new XmlNamespaceManager(table), null, XmlSpace.Default)) {}
+
+		public XmlDocumentTest(XmlSerializer classic, XmlReaderSettings settings, XmlParserContext context)
 		{
 			_classic = classic;
+			_settings = settings;
+			_context = context;
 			_xml     = Encoding.UTF8.GetBytes(Serialize());
 		}
 
@@ -42,7 +53,7 @@ namespace Performance.Serialization {
 		{
 			using (var stream = new MemoryStream(_xml))
 			{
-				using (var reader = _readerFactory.Get(stream))
+				using (var reader = XmlReader.Create(stream, _settings, _context))
 				{
 					var result = _classic.Deserialize(reader);
 					return result;
@@ -53,57 +64,50 @@ namespace Performance.Serialization {
 		[Benchmark]
 		public object DeserializeDom()
 		{
-			var result = new ProjectItemElement();
-
-			var document = Document();
-			foreach (var child in document.DocumentElement.ChildNodes.OfType<XmlElement>())
-			{
-				switch (child.Name)
-				{
-					case nameof(ProjectItemElement.Condition):
-						result.Condition = child.InnerText;
-						break;
-					case nameof(ProjectItemElement.Exclude):
-						result.Exclude = child.InnerText;
-						break;
-					case nameof(ProjectItemElement.Include):
-						result.Include = child.InnerText;
-						break;
-					case nameof(ProjectItemElement.ItemType):
-						result.ItemType = child.InnerText;
-						break;
-					case nameof(ProjectItemElement.KeepMetadata):
-						result.KeepMetadata = child.InnerText;
-						break;
-					case nameof(ProjectItemElement.Label):
-						result.Label = child.InnerText;
-						break;
-					case nameof(ProjectItemElement.Update):
-						result.Update = child.InnerText;
-						break;
-					case nameof(ProjectItemElement.KeepDuplicates):
-						result.KeepDuplicates = child.InnerText;
-						break;
-					case nameof(ProjectItemElement.Remove):
-						result.Remove = child.InnerText;
-						break;
-				}
-			}
-
-			return result;
-		}
-
-		XmlDocument Document()
-		{
 			using (var stream = new MemoryStream(_xml))
 			{
-				using (var reader = _readerFactory.Get(stream))
+				using (var reader = XmlReader.Create(stream, _settings, _context))
 				{
-					var result = new XmlDocument();
-					result.Load(reader);
+					var result   = new ProjectItemElement();
+					var document = new XmlDocument();
+					document.Load(reader);
+					foreach (var child in document.DocumentElement.ChildNodes.OfType<XmlElement>())
+					{
+						switch (child.Name)
+						{
+							case nameof(ProjectItemElement.Condition):
+								result.Condition = child.InnerText;
+								break;
+							case nameof(ProjectItemElement.Exclude):
+								result.Exclude = child.InnerText;
+								break;
+							case nameof(ProjectItemElement.Include):
+								result.Include = child.InnerText;
+								break;
+							case nameof(ProjectItemElement.ItemType):
+								result.ItemType = child.InnerText;
+								break;
+							case nameof(ProjectItemElement.KeepMetadata):
+								result.KeepMetadata = child.InnerText;
+								break;
+							case nameof(ProjectItemElement.Label):
+								result.Label = child.InnerText;
+								break;
+							case nameof(ProjectItemElement.Update):
+								result.Update = child.InnerText;
+								break;
+							case nameof(ProjectItemElement.KeepDuplicates):
+								result.KeepDuplicates = child.InnerText;
+								break;
+							case nameof(ProjectItemElement.Remove):
+								result.Remove = child.InnerText;
+								break;
+						}
+					}
 					return result;
 				}
 			}
+
 		}
 	}
 }

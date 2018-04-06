@@ -1,8 +1,8 @@
-﻿namespace Performance.Serialization {
+﻿namespace Performance.Serialization
+{
 	public abstract class ProjectElementContainer : ProjectElement
 	{
-		internal ProjectElementContainer()
-			: base() {}
+		internal ProjectElementContainer() {}
 
 		public ProjectElement FirstChild { get; set; }
 
