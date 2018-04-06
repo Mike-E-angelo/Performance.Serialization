@@ -1,0 +1,14 @@
+﻿using BenchmarkDotNet.Running;
+using System;
+
+namespace Performance.Serialization
+{
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			BenchmarkRunner.Run<XmlDocumentTest>();
+			Console.ReadLine();
+		}
+	}
+}
